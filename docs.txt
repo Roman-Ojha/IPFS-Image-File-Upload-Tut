@@ -2,3 +2,9 @@
 
 -> we will use react truffle box
     -> truffle unbox react
+
+-> we will not setup our own ipfs node on our system
+-> here we will connect to IPFS node instance with infura
+    -> https://github.com/INFURA/tutorials/wiki/Introduction-to-IPFS
+
+-> npm i ipfs-api

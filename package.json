@@ -1,0 +1,23 @@
+{
+  "name": "IPFS_File_Uploads",
+  "version": "1.0.0",
+  "description": "",
+  "main": "truffle-config.js",
+  "directories": {
+    "test": "test"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Roman-Ojha/IPFS-Image-File-Upload-Tut.git"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/Roman-Ojha/IPFS-Image-File-Upload-Tut/issues"
+  },
+  "homepage": "https://github.com/Roman-Ojha/IPFS-Image-File-Upload-Tut#readme"
+}
