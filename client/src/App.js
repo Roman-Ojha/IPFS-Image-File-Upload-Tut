@@ -2,6 +2,7 @@ import React, { Component } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import getWeb3 from "./getWeb3";
 import ipfs from "./services/ipfs";
+import Web3 from "web3";
 
 import "./App.css";
 
@@ -9,7 +10,7 @@ class App extends Component {
   state = {
     storageValue: 0,
     web3: null,
-    accounts: null,
+    account: null,
     contract: null,
     buffer: null,
     ipfsHash: "",
@@ -44,6 +45,21 @@ class App extends Component {
     //   );
     //   console.error(error);
     // }
+    try {
+      // initializing web3, contract
+      const web3 = new Web3("http://127.0.0.1:7545");
+      const id = await web3.eth.net.getId();
+      const deployedNetwork = SimpleStorageContract.networks[id];
+      const contract = new web3.eth.Contract(
+        SimpleStorageContract.abi,
+        deployedNetwork.address
+      );
+      const accounts = await web3.eth.getAccounts();
+      const ipfsHash = await contract.methods.get().call();
+      this.setState({ web3, account: accounts[0], contract, ipfsHash });
+    } catch (err) {
+      console.log(err);
+    }
   };
 
   runExample = async () => {
@@ -60,29 +76,47 @@ class App extends Component {
   };
 
   captureFile = (e) => {
-    // to upload the file on ipfs we will use buffer module so that ipfs can understand
-    // https://www.w3schools.com/nodejs/ref_buffer.asp#:~:text=The%20buffers%20module%20provides%20a,it%20using%20the%20require%20keyword.
-    e.preventDefault();
-    console.log("capture file");
-    const file = e.target.files[0];
-    const reader = new window.FileReader();
-    reader.readAsArrayBuffer(file);
-    reader.onload = () => {
-      this.setState({ buffer: Buffer(reader.result) });
-      console.log("buffer", this.state.buffer);
-    };
+    try {
+      // to upload the file on ipfs we will use buffer module so that ipfs can understand
+      // https://www.w3schools.com/nodejs/ref_buffer.asp#:~:text=The%20buffers%20module%20provides%20a,it%20using%20the%20require%20keyword.
+      e.preventDefault();
+      const file = e.target.files[0];
+      const reader = new window.FileReader();
+      reader.readAsArrayBuffer(file);
+      reader.onload = () => {
+        this.setState({ buffer: Buffer(reader.result) });
+      };
+    } catch (err) {
+      // console.log(err)
+    }
   };
   onSubmit = (e) => {
+    // here we will upload file to ipfs and store the file hash value on our blockchain smart contract
     e.preventDefault();
-    console.log("submit");
     ipfs.files.add(this.state.buffer, (err, result) => {
       // here we will add file on ipfs
       if (err) {
         console.error(err);
         return;
       }
-      this.setState({ ipfsHash: result[0].hash });
-      console.log(this.state.ipfsHash);
+      this.state.contract.methods
+        .set(result[0].hash)
+        .send({ from: this.state.account })
+        .then((result) => {
+          this.state.contract.methods
+            .get()
+            .call({ from: this.state.account })
+            .then((ipfsHash) => {
+              this.setState({ ipfsHash });
+              console.log("contract ipfsHash", ipfsHash);
+            })
+            .catch((err) => {
+              console.log(err);
+            });
+        })
+        .catch((err) => {
+          console.log(err);
+        });
     });
   };
   render() {
