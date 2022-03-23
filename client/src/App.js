@@ -1,7 +1,7 @@
 import React, { Component } from "react";
 import SimpleStorageContract from "./contracts/SimpleStorage.json";
 import getWeb3 from "./getWeb3";
-import ipfs from "./ipfs";
+import ipfs from "./services/ipfs";
 
 import "./App.css";
 
@@ -82,6 +82,7 @@ class App extends Component {
         return;
       }
       this.setState({ ipfsHash: result[0].hash });
+      console.log(this.state.ipfsHash);
     });
   };
   render() {
@@ -89,7 +90,7 @@ class App extends Component {
       <div className="App">
         <h1>Your Image</h1>
         <p>This image is stored on IPFS & the Ethereum Blockchain</p>
-        <img src="" alt="" />
+        <img src={`https://ipfs.io/ipfs/${this.state.ipfsHash}`} alt="img" />
         <h2>Upload Image</h2>
         <form onSubmit={this.onSubmit}>
           <input type="file" placeholder="" onChange={this.captureFile} />
