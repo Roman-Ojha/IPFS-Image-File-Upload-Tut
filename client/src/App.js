@@ -6,7 +6,20 @@ import ipfs from "./ipfs";
 import "./App.css";
 
 class App extends Component {
-  state = { storageValue: 0, web3: null, accounts: null, contract: null };
+  state = {
+    storageValue: 0,
+    web3: null,
+    accounts: null,
+    contract: null,
+    buffer: null,
+    ipfsHash: "",
+  };
+
+  constructor(props) {
+    super(props);
+    this.captureFile = this.captureFile.bind(this);
+    this.onSubmit = this.onSubmit.bind(this);
+  }
 
   componentDidMount = async () => {
     // try {
@@ -46,8 +59,31 @@ class App extends Component {
     this.setState({ storageValue: response });
   };
 
-  captureFile = () => {};
-  onSubmit = () => {};
+  captureFile = (e) => {
+    // to upload the file on ipfs we will use buffer module so that ipfs can understand
+    // https://www.w3schools.com/nodejs/ref_buffer.asp#:~:text=The%20buffers%20module%20provides%20a,it%20using%20the%20require%20keyword.
+    e.preventDefault();
+    console.log("capture file");
+    const file = e.target.files[0];
+    const reader = new window.FileReader();
+    reader.readAsArrayBuffer(file);
+    reader.onload = () => {
+      this.setState({ buffer: Buffer(reader.result) });
+      console.log("buffer", this.state.buffer);
+    };
+  };
+  onSubmit = (e) => {
+    e.preventDefault();
+    console.log("submit");
+    ipfs.files.add(this.state.buffer, (err, result) => {
+      // here we will add file on ipfs
+      if (err) {
+        console.error(err);
+        return;
+      }
+      this.setState({ ipfsHash: result[0].hash });
+    });
+  };
   render() {
     return (
       <div className="App">
